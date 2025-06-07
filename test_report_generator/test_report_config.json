@@ -1,0 +1,27 @@
+{
+    "title": "Test Report",
+    "project_name": "",
+    "project_version": "",
+    "test_type": "Manual - Regression",
+    "browser": "Chrome",
+    "change_id": "",
+    "environment": "DEV",
+    "start_date": "08/06/2025",
+    "end_date": "07/06/2025",
+    "tester": "",
+    "status": "Passed",
+    "test_cases": [],
+    "test_results": [
+        {
+            "no": "1",
+            "ticket_id": "",
+            "type": "Bug",
+            "status": "",
+            "priority": "Medium"
+        }
+    ],
+    "issues": [],
+    "notes": "",
+    "recommendations": "",
+    "conclusion": ""
+}

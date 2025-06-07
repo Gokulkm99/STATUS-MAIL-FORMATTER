@@ -1,0 +1,44 @@
+{
+    "config_file_path": "C:/Users/USER/Desktop/GM TOOLS AND FILES/MAIL AUTOMATION/STATUS MAIL FORMATTER/Json/config.json",
+    "tasks_file_path": "C:/Users/USER/Desktop/GM TOOLS AND FILES/MAIL AUTOMATION/STATUS MAIL FORMATTER/Json/tasks.json",
+    "logo_path": "C:/Users/USER/Desktop/GM TOOLS AND FILES/MAIL AUTOMATION/STATUS MAIL FORMATTER/Caparizonlogo.png",
+    "signature": {
+        "name": "Sruthi",
+        "mobile": "5354645",
+        "email": "SRUTH@CAP.COM"
+    },
+    "email": {
+        "to": "ADdfd@CAP.COM",
+        "cc": "SRUTH@CAP.COM;GOK@CAP.COM"
+    },
+    "labels": {
+        "BUG": "#d63b1c"
+    },
+    "main_projects": {
+        "PANASONIC": [
+            "Quality Control",
+            "Quality Dashboard",
+            "Material Offset",
+            "Operator Dashboard",
+            "PPE-GW",
+            "Kansas-PPE",
+            "Kansas Shipping",
+            "Onsite Testing",
+            "Automation Tool Testing",
+            "JMETER- Performance Testing"
+        ],
+        "ERP": [
+            "Fresh Products",
+            "Nice Chemicals",
+            "Esco"
+        ],
+        "PINNACLE": []
+    },
+    "task_types": [
+        "Dev",
+        "Bugfix",
+        "Test"
+    ],
+    "notification_time": "19:26",
+    "theme": "dark_blue.xml"
+}
