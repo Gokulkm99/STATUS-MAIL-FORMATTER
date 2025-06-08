@@ -10,27 +10,46 @@ class DetailsTab(QWidget):
         self.test_cases = []
         self.setup_ui()
         self.load_configuration()
+        self.load_dynamic_options()
 
     def setup_ui(self):
-        # Main layout for the entire widget
         main_layout = QVBoxLayout(self)
+        main_layout.setSpacing(10)
 
-        # Create a scroll area
+        # Top Bar
+        top_bar = QHBoxLayout()
+        main_layout.addLayout(top_bar)
+        top_bar.addStretch()
+        theme_button = QPushButton("☀" if self.parent().theme == "dark" else "🌙")
+        theme_button.setFixedSize(48, 48)
+        theme_button.setToolTip("Toggle Theme")
+        theme_button.clicked.connect(self.parent().toggle_theme)
+        self.parent().animate_button(theme_button)
+        top_bar.addWidget(theme_button)
+
+        settings_button = QPushButton("⚙ Settings")
+        settings_button.setToolTip("Open settings")
+        settings_button.clicked.connect(self.parent().show_settings_dialog)
+        self.parent().animate_button(settings_button)
+        top_bar.addWidget(settings_button)
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
-        # Create a container widget for the scroll area
         container = QWidget()
         scroll.setWidget(container)
         container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(10, 10, 10, 10)
+        container_layout.setSpacing(15)
 
         # Test Report Details Frame
         details_frame = QGroupBox("Test Report Details")
         details_layout = QFormLayout(details_frame)
+        details_layout.setLabelAlignment(Qt.AlignRight)
+        details_layout.setSpacing(10)
 
-        # Text entries
         self.title_entry = QLineEdit()
         self.title_entry.setPlaceholderText("Enter report title...")
         details_layout.addRow("Report Title:", self.title_entry)
@@ -51,61 +70,33 @@ class DetailsTab(QWidget):
         self.change_id_entry.setPlaceholderText("Enter change ID...")
         details_layout.addRow("Change ID:", self.change_id_entry)
 
-        # Browser radio buttons
         browser_group = QGroupBox("Browser")
-        browser_group.setMinimumHeight(60)
-        browser_group.setMinimumWidth(500)
+        browser_group.setMinimumHeight(80)
         browser_layout = QHBoxLayout(browser_group)
-        browser_layout.setSpacing(25)
-        browser_layout.setContentsMargins(10, 5, 10, 5)  # Reduced top margin to place buttons closer to title
+        browser_layout.setSpacing(20)
+        browser_layout.setContentsMargins(15, 5, 15, 5)
         self.browser_group = QButtonGroup()
-        browsers = ["Chrome", "Firefox", "Edge", "Safari"]
-        for browser in browsers:
-            radio = QRadioButton(browser)
-            if browser == "Chrome":
-                radio.setChecked(True)
-            self.browser_group.addButton(radio)
-            browser_layout.addWidget(radio)
-        browser_layout.addStretch()
+        self.browser_layout = browser_layout
         details_layout.addRow(browser_group)
 
-        # Environment radio buttons
         env_group = QGroupBox("Environment")
-        env_group.setMinimumHeight(60)
-        env_group.setMinimumWidth(500)
+        env_group.setMinimumHeight(80)
         env_layout = QHBoxLayout(env_group)
-        env_layout.setSpacing(25)
-        env_layout.setContentsMargins(10, 5, 10, 5)
+        env_layout.setSpacing(20)
+        env_layout.setContentsMargins(15, 5, 15, 5)
         self.env_group = QButtonGroup()
-        envs = ["DEV", "QA", "UAT", "PROD"]
-        for env in envs:
-            radio = QRadioButton(env)
-            if env == "DEV":
-                radio.setChecked(True)
-            self.env_group.addButton(radio)
-            env_layout.addWidget(radio)
-        env_layout.addStretch()
+        self.env_layout = env_layout
         details_layout.addRow(env_group)
 
-        # Status radio buttons
         status_group = QGroupBox("Status")
-        status_group.setMinimumHeight(60)
-        status_group.setMinimumWidth(400)
+        status_group.setMinimumHeight(80)
         status_layout = QHBoxLayout(status_group)
-        status_layout.setSpacing(25)
-        status_layout.setContentsMargins(10, 5, 10, 5)
+        status_layout.setSpacing(20)
+        status_layout.setContentsMargins(15, 5, 15, 5)
         self.status_group = QButtonGroup()
-        statuses = ["Passed", "Fail", "Blocked"]
-        for status in statuses:
-            radio = QRadioButton(status)
-            if status == "Passed":
-                radio.setChecked(True)
-            self.status_group.addButton(radio)
-            status_layout.addWidget(radio)
-        status_layout.addStretch()
+        self.status_layout = status_layout
         details_layout.addRow(status_group)
 
-        # Date entries
         self.start_date = QDateEdit()
         self.start_date.setCalendarPopup(True)
         self.start_date.setDate(QDate.currentDate())
@@ -122,16 +113,16 @@ class DetailsTab(QWidget):
 
         container_layout.addWidget(details_frame)
 
-        # Test Cases Frame
         test_cases_frame = QGroupBox("Test Cases")
         test_cases_layout = QVBoxLayout(test_cases_frame)
+        test_cases_layout.setSpacing(10)
 
         self.test_case_entry = QLineEdit()
         self.test_case_entry.setPlaceholderText("Enter test case description...")
         test_cases_layout.addWidget(self.test_case_entry)
 
-        # Buttons in a horizontal layout
         button_layout = QHBoxLayout()
+        button_layout.setSpacing(10)
         add_test_case_btn = QPushButton("Add Test Case")
         add_test_case_btn.clicked.connect(self.add_test_case)
         button_layout.addWidget(add_test_case_btn)
@@ -149,21 +140,48 @@ class DetailsTab(QWidget):
         container_layout.addWidget(test_cases_frame)
         container_layout.addStretch()
 
-        # Add the scroll area to the main layout
         main_layout.addWidget(scroll)
 
-        # Apply a stylesheet for title positioning only
-        self.setStyleSheet("""
-            QGroupBox {
-                margin-top: 25px;  /* Reduced margin to tighten layout */
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                padding: 5px 10px;  /* Reduced padding to bring title closer to content */
-                margin-left: 8px;
-            }
-        """)
+    def load_dynamic_options(self):
+        for button in self.browser_group.buttons():
+            self.browser_group.removeButton(button)
+            self.browser_layout.removeWidget(button)
+            button.deleteLater()
+        for button in self.env_group.buttons():
+            self.env_group.removeButton(button)
+            self.env_layout.removeWidget(button)
+            button.deleteLater()
+        for button in self.status_group.buttons():
+            self.status_group.removeButton(button)
+            self.status_layout.removeWidget(button)
+            button.deleteLater()
+
+        browsers = self.parent().config.get("browsers", ["Chrome", "Firefox", "Edge", "Safari"])
+        for browser in browsers:
+            radio = QRadioButton(browser)
+            if browser == self.parent().config.get("browser", "Chrome"):
+                radio.setChecked(True)
+            self.browser_group.addButton(radio)
+            self.browser_layout.addWidget(radio)
+        self.browser_layout.addStretch()
+
+        environments = self.parent().config.get("environments", ["DEV", "QA", "UAT", "PROD"])
+        for env in environments:
+            radio = QRadioButton(env)
+            if env == self.parent().config.get("environment", "DEV"):
+                radio.setChecked(True)
+            self.env_group.addButton(radio)
+            self.env_layout.addWidget(radio)
+        self.env_layout.addStretch()
+
+        statuses = self.parent().config.get("statuses", ["Passed", "Fail", "Blocked"])
+        for status in statuses:
+            radio = QRadioButton(status)
+            if status == self.parent().config.get("status", "Passed"):
+                radio.setChecked(True)
+            self.status_group.addButton(radio)
+            self.status_layout.addWidget(radio)
+        self.status_layout.addStretch()
 
     def add_test_case(self):
         test_case = self.test_case_entry.text().strip()

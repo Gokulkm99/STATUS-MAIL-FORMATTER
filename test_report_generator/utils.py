@@ -11,6 +11,8 @@ class NotificationDialog(QDialog):
 
     def setup_ui(self, message):
         layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(10, 10, 10, 10)
 
         label = QLabel(message)
         label.setAlignment(Qt.AlignCenter)
@@ -20,16 +22,3 @@ class NotificationDialog(QDialog):
         ok_btn = QPushButton("OK")
         ok_btn.clicked.connect(self.accept)
         layout.addWidget(ok_btn)
-
-        self.setStyleSheet("""
-            QLabel {
-                color: #D32F2F if self.is_error else #388E3C;
-                font-size: 14pt;
-                padding: 10px;
-            }
-            QPushButton {
-                padding: 8px 16px;
-                border-radius: 4px;
-                font-size: 12pt;
-            }
-        """)

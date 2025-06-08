@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
                                QPushButton, QTextEdit, QGroupBox, QLabel)
 from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QSettings
 from PySide6.QtGui import QFont, QIcon, QFontDatabase
-from qt_material import apply_stylesheet  # For theming
 from test_report_generator.details_tab import DetailsTab
 from test_report_generator.results_tab import ResultsTab
 from test_report_generator.settings_dialog import SettingsDialog
@@ -21,12 +20,15 @@ DEFAULT_TEST_CONFIG = {
     "project_version": "",
     "type_of_test": "Manual - Regression",
     "browser": "Chrome",
+    "browsers": ["Chrome", "Firefox", "Edge", "Safari"],
     "change_id": "",
     "environment": "DEV",
+    "environments": ["DEV", "QA", "UAT", "PROD"],
     "start_date": "",
     "end_date": "",
     "tester": "",
     "status": "Passed",
+    "statuses": ["Passed", "Fail", "Blocked"],
     "test_cases": [],
     "test_results": [],
     "issues": [],
@@ -36,50 +38,32 @@ DEFAULT_TEST_CONFIG = {
 }
 
 class TestReportGeneratorWidget(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Test Report Generator")
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Status Mail - Formatter")
         self.setMinimumSize(800, 600)
         self.config = DEFAULT_TEST_CONFIG.copy()
-        self.theme = "dark_teal.xml"  # Synchronized with EODTool
         self.settings = QSettings("xAI", "TestReportGenerator")
+        self.theme = self.settings.value("theme", "dark")
         self.setup_ui()
         self.load_fonts()
         self.load_configuration()
+        self.apply_theme()
 
     def load_fonts(self):
         font_db = QFontDatabase()
         families = font_db.families()
         if "Roboto" in families:
-            self.setFont(QFont("Roboto", 10))
+            self.setFont(QFont("Roboto", 12))
         elif "Calibri" in families:
-            self.setFont(QFont("Calibri", 10))
+            self.setFont(QFont("Calibri", 12))
         else:
-            self.setFont(QFont("Arial", 10))
+            self.setFont(QFont("Arial", 12))
 
     def setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(12)
-
-        # Top Bar
-        top_bar = QHBoxLayout()
-        main_layout.addLayout(top_bar)
-        top_bar.addStretch()
-        self.theme_button = QPushButton()
-        self.theme_button.setIcon(QIcon.fromTheme("weather-clear"))
-        self.theme_button.setFixedSize(48, 48)
-        self.theme_button.setToolTip("Toggle Theme")
-        self.theme_button.clicked.connect(self.toggle_theme)
-        self.animate_button(self.theme_button)
-        top_bar.addWidget(self.theme_button)
-
-        self.settings_button = QPushButton("Settings")
-        self.settings_button.setIcon(QIcon.fromTheme("settings-configure"))
-        self.settings_button.setToolTip("Open settings")
-        self.settings_button.clicked.connect(self.show_settings_dialog)
-        self.animate_button(self.settings_button)
-        top_bar.addWidget(self.settings_button)
 
         # Tab Widget
         self.tab_widget = QTabWidget()
@@ -96,6 +80,22 @@ class TestReportGeneratorWidget(QWidget):
         # Tab 3: Comments
         comments_widget = QWidget()
         comments_layout = QVBoxLayout(comments_widget)
+        top_bar = QHBoxLayout()
+        comments_layout.addLayout(top_bar)
+        top_bar.addStretch()
+        theme_button = QPushButton("☀" if self.theme == "dark" else "🌙")
+        theme_button.setFixedSize(48, 48)
+        theme_button.setToolTip("Toggle Theme")
+        theme_button.clicked.connect(self.toggle_theme)
+        self.animate_button(theme_button)
+        top_bar.addWidget(theme_button)
+
+        settings_button = QPushButton("⚙ Settings")
+        settings_button.setToolTip("Open settings")
+        settings_button.clicked.connect(self.show_settings_dialog)
+        self.animate_button(settings_button)
+        top_bar.addWidget(settings_button)
+
         comments_frame = QGroupBox("Comments")
         comments_inner = QVBoxLayout(comments_frame)
 
@@ -119,21 +119,17 @@ class TestReportGeneratorWidget(QWidget):
         self.conclusion_text.setFixedHeight(150)
         comments_inner.addWidget(QLabel("Conclusion:"))
         comments_inner.addWidget(self.conclusion_text)
-        comments_layout.addWidget(comments_frame)
-        self.tab_widget.addTab(comments_widget, "Comments")
 
-        # Bottom Buttons
-        bottom_layout = QHBoxLayout()
+        comments_inner.addSpacing(10)
+
         generate_btn = QPushButton("Generate Report")
-        generate_btn.setIcon(QIcon.fromTheme("document-save"))
         generate_btn.setToolTip("Generate and open the test report")
         generate_btn.clicked.connect(self.generate_report)
         self.animate_button(generate_btn)
-        bottom_layout.addWidget(generate_btn)
-        main_layout.addLayout(bottom_layout)
+        comments_inner.addWidget(generate_btn, alignment=Qt.AlignRight)
 
-        # Apply theme initially
-        self.apply_theme()
+        comments_layout.addWidget(comments_frame)
+        self.tab_widget.addTab(comments_widget, "Comments")
 
     def animate_button(self, button):
         animation = QPropertyAnimation(button, b"geometry")
@@ -150,66 +146,253 @@ class TestReportGeneratorWidget(QWidget):
         animation.finished.connect(lambda: button.setGeometry(original_geometry))
 
     def toggle_theme(self):
-        # Delegate to the parent EODTool to toggle the application-wide theme
-        parent = self.parent()
-        while parent is not None:
-            if hasattr(parent, 'toggle_theme'):
-                parent.toggle_theme()
-                break
-            parent = parent.parent()
+        self.theme = "light" if self.theme == "dark" else "dark"
+        self.settings.setValue("theme", self.theme)
+        self.apply_theme()
+        # Update theme buttons in all tabs
+        for i in range(self.tab_widget.count()):
+            tab = self.tab_widget.widget(i)
+            for btn in tab.findChildren(QPushButton):
+                if btn.toolTip() == "Toggle Theme":
+                    btn.setText("☀" if self.theme == "dark" else "🌙")
 
     def apply_theme(self):
-        # Synchronize with the parent's theme
-        parent = self.parent()
-        while parent is not None:
-            if hasattr(parent, 'theme'):
-                self.theme = parent.theme
-                break
-            parent = parent.parent()
-        # Apply minimal custom styles on top of qt-material theme
-        extra_styles = """
-            QTabWidget::pane {
-                border: 1px solid #B0BEC5;
-                border-radius: 4px;
-            }
-            QTabBar::tab {
-                padding: 12px;
-                margin-right: 4px;
-                border-radius: 4px;
-            }
-            QGroupBox {
-                font-weight: bold;
-                font-size: 14pt;
-            }
-            QLineEdit, QTextEdit {
-                padding: 8px;
-                border-radius: 4px;
-            }
-            QComboBox, QDateEdit {
-                padding: 8px;
-                border-radius: 4px;
-            }
-            QPushButton {
-                padding: 8px 16px;
-                border-radius: 4px;
-                font-size: 12pt;
-                min-height: 32px;
-            }
-            QTableWidget, QListWidget {
-                padding: 8px;
-                border-radius: 4px;
-            }
-            QTableWidget::item {
-                padding: 12px;
-                min-height: 48px;
-            }
-        """
-        self.setStyleSheet(extra_styles)
-        self.theme_button.setIcon(QIcon.fromTheme("weather-clear" if "dark" in self.theme else "weather-clear-night"))
+        if self.theme == "dark":
+            stylesheet = """
+                TestReportGeneratorWidget {
+                    background-color: #212121;
+                    color: #E0E0E0;
+                    font-family: Roboto, Calibri, Arial, sans-serif;
+                    font-size: 12px;
+                }
+                TestReportGeneratorWidget QWidget {
+                    background-color: #212121;
+                    color: #E0E0E0;
+                }
+                TestReportGeneratorWidget QTabWidget {
+                    background-color: #212121;
+                }
+                TestReportGeneratorWidget QTabWidget::pane {
+                    border: 1px solid #333333;
+                    background-color: #212121;
+                    border-top: none;
+                }
+                TestReportGeneratorWidget QTabBar::tab {
+                    background-color: #272727;
+                    color: #E0E0E0;
+                    padding: 8px 20px;
+                    border: 1px solid #333333;
+                    border-bottom: none;
+                    border-top-left-radius: 5px;
+                    border-top-right-radius: 5px;
+                }
+                TestReportGeneratorWidget QTabBar::tab:selected {
+                    background-color: #1976D2;
+                    color: white;
+                }
+                TestReportGeneratorWidget QGroupBox {
+                    background-color: #272727;
+                    border: 1px solid #333333;
+                    border-radius: 10px;
+                    margin-top: 10px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #E0E0E0;
+                }
+                TestReportGeneratorWidget QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    padding: 5px;
+                }
+                TestReportGeneratorWidget QLabel {
+                    color: #B0BEC5;
+                    font-family: Roboto, Calibri, Arial, sans-serif;
+                    font-size: 14px;
+                }
+                TestReportGeneratorWidget QLineEdit, 
+                TestReportGeneratorWidget QTextEdit, 
+                TestReportGeneratorWidget QComboBox, 
+                TestReportGeneratorWidget QDateEdit {
+                    background-color: #333333;
+                    color: #E0E0E0;
+                    border: 1px solid #424242;
+                    border-radius: 5px;
+                    padding: 5px;
+                    font-family: Roboto, Calibri, Arial, sans-serif;
+                    font-size: 14px;
+                }
+                TestReportGeneratorWidget QPushButton {
+                    background-color: #1976D2;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    padding: 8px;
+                    font-family: Roboto, Calibri, Arial, sans-serif;
+                    font-size: 14px;
+                    font-weight: bold;
+                }
+                TestReportGeneratorWidget QPushButton:hover {
+                    background-color: #1565C0;
+                }
+                TestReportGeneratorWidget QPushButton:disabled {
+                    background-color: #424242;
+                    color: #666666;
+                }
+                TestReportGeneratorWidget QRadioButton {
+                    color: #B0BEC5;
+                    font-family: Roboto, Calibri, Arial, sans-serif;
+                    font-size: 12px;
+                    min-height: 20px;
+                    spacing: 5px;
+                }
+                TestReportGeneratorWidget QTableWidget, 
+                TestReportGeneratorWidget QListWidget {
+                    background-color: #272727;
+                    color: #E0E0E0;
+                    border: 1px solid #333333;
+                    border-radius: 5px;
+                    padding: 5px;
+                    font-family: Roboto, Calibri, Arial, sans-serif;
+                    font-size: 14px;
+                    alternate-background-color: #303030;
+                }
+                TestReportGeneratorWidget QTableWidget::item, 
+                TestReportGeneratorWidget QListWidget::item {
+                    padding: 12px;
+                }
+                TestReportGeneratorWidget QTableWidget::item:selected, 
+                TestReportGeneratorWidget QListWidget::item:selected {
+                    background-color: #1976D2;
+                    color: white;
+                }
+                TestReportGeneratorWidget QScrollArea, 
+                TestReportGeneratorWidget QScrollArea > QWidget > QWidget {
+                    background-color: #212121;
+                    color: #E0E0E0;
+                }
+            """
+        else:
+            stylesheet = """
+                TestReportGeneratorWidget {
+                    background-color: #FFFFFF;
+                    color: #212121;
+                    font-family: Calibri, Arial, sans-serif;
+                    font-size: 12px;
+                }
+                TestReportGeneratorWidget QWidget {
+                    background-color: #FFFFFF;
+                    color: #212121;
+                }
+                TestReportGeneratorWidget QTabWidget {
+                    background-color: #FFFFFF;
+                }
+                TestReportGeneratorWidget QTabWidget::pane {
+                    border: 1px solid #000000;
+                    background-color: #FFFFFF;
+                    border-top: none;
+                }
+                TestReportGeneratorWidget QTabBar::tab {
+                    background-color: #F0F0F0;
+                    color: #212121;
+                    padding: 8px 20px;
+                    border: 1px solid #000000;
+                    border-bottom: none;
+                    border-top-left-radius: 5px;
+                    border-top-right-radius: 5px;
+                }
+                TestReportGeneratorWidget QTabBar::tab:selected {
+                    background-color: #1976D2;
+                    color: white;
+                }
+                TestReportGeneratorWidget QGroupBox {
+                    background-color: #FFFFFF;
+                    border: 1px solid #000000;
+                    border-radius: 5px;
+                    margin-top: 15px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #212121;
+                }
+                TestReportGeneratorWidget QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    padding: 0 5px;
+                    margin-left: 5px;
+                }
+                TestReportGeneratorWidget QLabel {
+                    color: #616161;
+                    font-family: Calibri, Arial, sans-serif;
+                    font-size: 12px;
+                }
+                TestReportGeneratorWidget QLineEdit, 
+                TestReportGeneratorWidget QTextEdit, 
+                TestReportGeneratorWidget QComboBox, 
+                TestReportGeneratorWidget QDateEdit {
+                    background-color: white;
+                    border: 1px solid #000000;
+                    border-radius: 4px;
+                    padding: 5px;
+                    color: #212121;
+                    font-family: Calibri, Arial, sans-serif;
+                    font-size: 12px;
+                }
+                TestReportGeneratorWidget QPushButton {
+                    background-color: #1976D2;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 8px;
+                    font-family: Calibri, Arial, sans-serif;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+                TestReportGeneratorWidget QPushButton:hover {
+                    background-color: #1565C0;
+                }
+                TestReportGeneratorWidget QPushButton:disabled {
+                    background-color: #E0E0E0;
+                    color: #B0BEC5;
+                }
+                TestReportGeneratorWidget QRadioButton {
+                    color: #616161;
+                    font-family: Calibri, Arial, sans-serif;
+                    font-size: 12px;
+                    min-height: 20px;
+                    spacing: 5px;
+                }
+                TestReportGeneratorWidget QTableWidget, 
+                TestReportGeneratorWidget QListWidget {
+                    background-color: white;
+                    color: #212121;
+                    border: 1px solid #000000;
+                    border-radius: 4px;
+                    padding: 5px;
+                    font-family: Calibri, Arial, sans-serif;
+                    font-size: 12px;
+                    alternate-background-color: #F9F9F9;
+                }
+                TestReportGeneratorWidget QTableWidget::item, 
+                TestReportGeneratorWidget QListWidget::item {
+                    padding: 12px;
+                }
+                TestReportGeneratorWidget QTableWidget::item:selected, 
+                TestReportGeneratorWidget QListWidget::item:selected {
+                    background-color: #1976D2;
+                    color: white;
+                }
+                TestReportGeneratorWidget QScrollArea, 
+                TestReportGeneratorWidget QScrollArea > QWidget > QWidget {
+                    background-color: #FFFFFF;
+                    color: #212121;
+                }
+            """
+        self.setStyleSheet(stylesheet)
 
     def show_settings_dialog(self):
         dialog = SettingsDialog(self)
         dialog.exec()
+        self.details_tab.load_dynamic_options()
+        self.load_configuration()
 
     def load_configuration(self):
         try:
@@ -217,6 +400,9 @@ class TestReportGeneratorWidget(QWidget):
             self.notes_text.setText(self.settings.value("notes", ""))
             self.recommendations_text.setText(self.settings.value("recommendations", ""))
             self.conclusion_text.setText(self.settings.value("conclusion", ""))
+            self.config["browsers"] = json.loads(self.settings.value("browsers", json.dumps(["Chrome", "Firefox", "Edge", "Safari"])))
+            self.config["environments"] = json.loads(self.settings.value("environments", json.dumps(["DEV", "QA", "UAT", "PROD"])))
+            self.config["statuses"] = json.loads(self.settings.value("statuses", json.dumps(["Passed", "Fail", "Blocked"])))
             self.settings.endGroup()
         except Exception as e:
             print(f"Failed to load configuration: {e}")
@@ -354,7 +540,6 @@ class TestReportGeneratorWidget(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    apply_stylesheet(app, theme="dark_teal.xml")
     widget = TestReportGeneratorWidget()
     widget.show()
     sys.exit(app.exec())
