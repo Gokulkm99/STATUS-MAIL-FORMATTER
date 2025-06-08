@@ -9,7 +9,8 @@
     },
     "email": {
         "to": "ADdfd@CAP.COM",
-        "cc": "SRUTH@CAP.COM;GOK@CAP.COM"
+        "cc": "SRUTH@CAP.COM;GOK@CAP.COM",
+        "recipient": "Team"
     },
     "labels": {
         "BUG": "#d63b1c"
@@ -40,5 +41,5 @@
         "Test"
     ],
     "notification_time": "19:26",
-    "theme": "dark_green"
+    "theme": "dark_default"
 }

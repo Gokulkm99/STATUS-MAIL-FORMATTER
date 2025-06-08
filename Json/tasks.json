@@ -3,6 +3,13 @@
         "main_project": "PANASONIC",
         "sub_project": "Quality Control",
         "task": "https://jira-panasonicdsc.atlassian.net/browse/KSD-4456",
+        "status": "Completed",
+        "task_type": "Normal"
+    },
+    {
+        "main_project": "PANASONIC",
+        "sub_project": "Quality Control",
+        "task": "https://jira-panasonicdsc.atlassian.net/browse/KSD-4456",
         "status": "Blocked",
         "task_type": "Test",
         "label": "BUG",
@@ -19,14 +26,7 @@
         "main_project": "PANASONIC",
         "sub_project": "Quality Control",
         "task": "https://jira-panasonicdsc.atlassian.net/browse/KSD-4456",
-        "status": "Completed",
-        "task_type": "Normal"
-    },
-    {
-        "main_project": "PANASONIC",
-        "sub_project": "Quality Control",
-        "task": "fgdfgdfg",
         "status": "In Progress",
-        "task_type": "Bugfix"
+        "task_type": "Dev"
     }
 ]

@@ -1,11 +1,13 @@
 import json
 import os
 import webbrowser
-import datetime
 import tempfile
 from datetime import date
 import base64
 import logging
+import subprocess
+import urllib.parse
+import win32com.client
 from PySide6.QtWidgets import (QMessageBox, QDialog, QSystemTrayIcon, QMenu, QFileDialog, QVBoxLayout)
 from PySide6.QtCore import Qt, QTimer, QDateTime
 from PySide6.QtGui import QCloseEvent, QIcon
@@ -37,7 +39,7 @@ DEFAULT_CONFIG = {
     "theme": "dark_default"
 }
 
-# Define STATUS_COLORS for the new email format
+# Define STATUS_COLORS for the email format
 STATUS_COLORS = {
     "Completed": "#5e8f59",
     "In Progress": "#c06530",
@@ -53,6 +55,7 @@ logging.basicConfig(filename='notification.log', level=logging.INFO,
 def load_config(config_path, default_path):
     config_path = get_config_or_tasks_path(DEFAULT_CONFIG_FILE, config_path, default_path)
     if not os.path.exists(config_path):
+        logging.info(f"No config file found at {config_path}, using default config")
         return DEFAULT_CONFIG.copy(), config_path
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
@@ -66,8 +69,10 @@ def load_config(config_path, default_path):
         for subkey in DEFAULT_CONFIG["email"]:
             if subkey not in config["email"]:
                 config["email"][subkey] = DEFAULT_CONFIG["email"][subkey]
+        logging.info(f"Loaded config: email={config['email']}, cc={config['email']['cc']}")
         return config, config_path
     except Exception as e:
+        logging.error(f"Error loading config: {e}")
         print(f"Error loading config: {e}")
         return DEFAULT_CONFIG.copy(), config_path
 
@@ -161,7 +166,6 @@ class EODLogic:
 
         # Connect UI signals
         self.connect_signals()
-        self.load_tasks()
         self.update_config_widgets()
 
     def connect_signals(self):
@@ -196,7 +200,7 @@ class EODLogic:
 
     def check_notification_time(self):
         current_time = QDateTime.currentDateTime().time().toString("HH:mm")
-        current_day = datetime.today().weekday()
+        current_day = date.today().weekday()
         if current_day in (5, 6):
             logging.debug(f"Skipping notification - Today is {'Saturday' if current_day == 5 else 'Sunday'}")
             return
@@ -214,6 +218,7 @@ class EODLogic:
     def update_config(self, new_config, new_config_path):
         self.config = new_config
         self.config_path = new_config_path
+        logging.info(f"Updated config: cc={new_config['email']['cc']}")
         self.update_config_widgets()
         self.ui.apply_theme(self.config.get("theme", "dark_default"))
 
@@ -345,8 +350,8 @@ class EODLogic:
 
     def move_task_down(self):
         idx = self.ui.task_list.currentRow()
-        if idx < len(self.tasks) - 1:
-            self.tasks[idx + 1], self.tasks[idx] = self.tasks[idx + 1], self.tasks[idx]
+        if idx >= 0 and idx < len(self.tasks) - 1:
+            self.tasks[idx], self.tasks[idx + 1] = self.tasks[idx + 1], self.tasks[idx]
             self.update_task_list()
             self.ui.task_list.setCurrentRow(idx + 1)
             self.save_tasks()
@@ -364,7 +369,16 @@ class EODLogic:
         try:
             with open(self.config["tasks_file_path"], 'w', encoding='utf-8') as f:
                 json.dump(self.tasks, f, indent=4)
+            logging.info("Tasks saved successfully")
+            self.tray_icon.showMessage(
+                "Daily Status Mail Formatter",
+                "Tasks saved successfully!",
+                QSystemTrayIcon.Information,
+                2000
+            )
+            QMessageBox.information(self.parent, "Success", "Tasks saved successfully!")
         except Exception as e:
+            logging.error(f"Failed to save tasks: {e}")
             QMessageBox.critical(self.parent, "Save Error", f"Failed to save tasks:\n{e}")
 
     def load_tasks(self):
@@ -378,8 +392,16 @@ class EODLogic:
                     if "task_type" not in task:
                         task["task_type"] = "Normal"
                 self.update_task_list()
-                self.save_tasks()
+                logging.info("Tasks loaded successfully")
+                self.tray_icon.showMessage(
+                    "Daily Status Mail Formatter",
+                    "Tasks loaded successfully!",
+                    QSystemTrayIcon.Information,
+                    2000
+                )
+                QMessageBox.information(self.parent, "Success", "Tasks loaded successfully!")
             except Exception as e:
+                logging.error(f"Failed to load tasks: {e}")
                 QMessageBox.critical(self.parent, "Load Error", f"Failed to load tasks:\n{e}")
                 self.tasks = []
                 self.update_task_list()
@@ -440,16 +462,16 @@ class EODLogic:
         logo_base64 = encode_image_base64(self.config["logo_path"])
         logo_img = f'<img src="data:image/png;base64,{logo_base64}" style="height:40px;">' if logo_base64 and preview else ''
         signature_html = f"""
-    <p><br>--<br>Thanks & Regards,<br><b>{signature['name']}</b><br>
-    {logo_img}<br>
-    Caparizon Software Ltd<br>
-    D-75, 8th Floor, Infra Futura, Kakkanaad, Kochi - 682021<br>
-    Mobile: {signature['mobile']}<br>
-    Office: +91 - 9400359991<br>
-    <a href="mailto:{signature['email']}">{signature['email']}</a><br>
-    <a href="http://www.caparizon.com">www.caparizon.com</a>
-    </p>
-"""
+        <p><br>--<br>Thanks & Regards,<br><b>{signature['name']}</b><br>
+        {logo_img}<br>
+        Caparizon Software Ltd<br>
+        D-75, 8th Floor, Infra Futura, Kakkanaad, Kochi - 682021<br>
+        Mobile: {signature['mobile']}<br>
+        Office: +91 - 9400359991<br>
+        <a href="mailto:{signature['email']}">{signature['email']}</a><br>
+        <a href="http://www.caparizon.com">www.caparizon.com</a>
+        </p>
+        """
         return signature_html
 
     def generate_copy_html(self):
@@ -478,11 +500,16 @@ class EODLogic:
             QMessageBox.warning(self.parent, "No Tasks", "No tasks to copy.")
             return
         try:
-            html_content = self.generate_copy_html()
+            html_content = self.generate_email_body(preview=False)
             set_clipboard_html(html_content)
             self.html_copied = True
             self.ui.open_outlook_button.setEnabled(True)
-            QMessageBox.information(self.parent, "Success", "HTML body copied to clipboard!")
+            QMessageBox.information(
+                self.parent,
+                "Success",
+                "HTML body (without signature) copied to clipboard!\n"
+                "You can now click 'Open in Email Client' and paste (Ctrl+V) the content into the email body."
+            )
         except Exception as e:
             QMessageBox.critical(self.parent, "Copy Error", f"Failed to copy HTML body:\n{e}")
 
@@ -496,7 +523,7 @@ class EODLogic:
         try:
             text_content = f"Daily Status Update - {date.today().strftime('%d/%m/%Y')}\n\n"
             text_content += "Hi Team,\n\n"
-            text_content += f"Please find the below status update for today ({date.today().strftime('%d/%m/%Y')}):\n\n"
+            text_content += f"Please find the below status update for today ({date.today().strftime('%d%m%Y')}):\n\n"
             for task in self.tasks:
                 label = task.get("label", "")
                 label_display = f" [{label}]" if label else ""
@@ -516,21 +543,42 @@ class EODLogic:
         if not self.tasks:
             QMessageBox.warning(self.parent, "No Tasks", "No tasks to preview.")
             return
-        html_content = self.generate_email_body(preview=True)  # Include logo in preview
+        html_content = self.generate_email_body(preview=True)
         signature = self.generate_signature(preview=True)
         full_html = html_content.rsplit("</body>", 1)[0] + signature + "</body></html>"
         preview_email_html(full_html)
 
     def open_outlook_email(self):
+        if not self.tasks:
+            QMessageBox.warning(self.parent, "No Tasks", "No tasks to include in the email.")
+            return
+        if not self.config["email"]["to"].strip():
+            QMessageBox.warning(self.parent, "Configuration Error", "Please configure at least one 'To' email address in Settings.")
+            return
+
         try:
-            if not self.html_copied:
-                html_content = self.generate_copy_html()
-                set_clipboard_html(html_content)
-                self.html_copied = True
+            html_content = self.generate_copy_html()
+            set_clipboard_html(html_content)
+            self.html_copied = True
 
-            outlook_url = "https://outlook.office.com/mail/"
+            today = date.today().strftime("%d/%m/%Y")
+            subject = f"Daily Status {today}"
+            to_emails = self.config["email"]["to"].strip()
+            cc_emails_raw = self.config["email"]["cc"].strip()
+            cc_emails = cc_emails_raw.replace(',', ';')  # Normalize to semicolons for COM
+            if not cc_emails:
+                logging.warning(f"No valid CC emails found. Raw input: {cc_emails_raw}")
+                QMessageBox.information(self.parent, "Warning", "No CC emails configured. Proceeding with only To emails.")
+            logging.info(f"Opening email with To: {to_emails}, CC: {cc_emails}, Raw CC: {cc_emails_raw}, Subject: {subject}")
 
+            # Try Outlook PWA via Chrome
             try:
+                encoded_to = urllib.parse.quote(to_emails)
+                # Split CC emails and encode as comma-separated for PWA
+                cc_list = [email.strip() for email in cc_emails.split(';') if email.strip()]
+                encoded_cc = urllib.parse.quote(','.join(cc_list)) if cc_list else ''
+                encoded_subject = urllib.parse.quote(subject)
+                outlook_pwa_url = f"https://outlook.office.com/mail/0/deeplink/compose?to={encoded_to}&cc={encoded_cc}&subject={encoded_subject}"
                 chrome_path = None
                 possible_paths = [
                     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
@@ -540,31 +588,56 @@ class EODLogic:
                     if os.path.exists(path):
                         chrome_path = path
                         break
-
                 if chrome_path:
-                    webbrowser.register('chrome', None, webbrowser.BackgroundBrowser(chrome_path))
-                    webbrowser.get('chrome').open(outlook_url, new=2)
+                    subprocess.run([chrome_path, outlook_pwa_url], check=True)
                     QMessageBox.information(
                         self.parent,
                         "Success",
-                        "Outlook web app opened in Chrome. The HTML body is copied to the clipboard.\n"
-                        "Please create a new email and paste the content (Ctrl+V)."
+                        "Outlook PWA opened in Chrome with pre-filled To, CC, and Subject.\n"
+                        "The HTML body is copied to the clipboard. Please paste (Ctrl+V) into the email body."
                     )
                 else:
-                    webbrowser.open(outlook_url, new=2)
+                    webbrowser.open(outlook_pwa_url, new=2)
                     QMessageBox.information(
                         self.parent,
                         "Success",
-                        "Outlook web app opened in your default browser (Chrome not found).\n"
-                        "The HTML body is copied to the clipboard.\n"
-                        "Please create a new email and paste the content (Ctrl+V)."
+                        "Outlook PWA opened in default browser (Chrome not found).\n"
+                        "The HTML body is copied to the clipboard. Please paste (Ctrl+V) into the email body."
                     )
+                return
+            except (FileNotFoundError, subprocess.CalledProcessError) as e:
+                logging.info(f"Failed to open Outlook PWA: {e}")
 
-            except Exception as browser_error:
+            # Try Outlook New
+            try:
+                outlook = win32com.client.Dispatch("Outlook.Application.16")
+                mail = outlook.CreateItem(0)  # 0 = olMailItem
+                mail.Subject = subject
+                mail.To = to_emails
+                mail.CC = cc_emails  # Semicolon-separated
+                mail.HTMLBody = html_content
+                mail.Display()
+                QMessageBox.information(self.parent, "Success", "Email opened in Outlook New with pre-filled fields!")
+                return
+            except Exception as e:
+                logging.info(f"Failed to open Outlook New: {e}")
+
+            # Fall back to classic Outlook
+            try:
+                outlook = win32com.client.Dispatch("Outlook.Application")
+                mail = outlook.CreateItem(0)  # 0 = olMailItem
+                mail.Subject = subject
+                mail.To = to_emails
+                mail.CC = cc_emails
+                mail.HTMLBody = html_content
+                mail.Display()
+                QMessageBox.information(self.parent, "Success", "Email opened in classic Outlook with pre-filled fields!")
+            except Exception as e:
                 QMessageBox.critical(
                     self.parent,
-                    "Browser Error",
-                    f"Failed to open Chrome:\n{browser_error}\n\n"
+                    "Email Error",
+                    f"Failed to open email in any Outlook version.\n"
+                    f"Ensure Outlook or Chrome is installed.\nError: {str(e)}\n"
                     "The HTML body is copied to the clipboard. Please open Outlook manually and paste the content."
                 )
 
@@ -572,7 +645,7 @@ class EODLogic:
             QMessageBox.critical(
                 self.parent,
                 "Email Error",
-                f"Failed to prepare email:\n{e}\n\n"
+                f"Failed to prepare email:\n{e}\n"
                 "Please try copying the HTML body and pasting it into Outlook manually."
             )
 

@@ -1374,3 +1374,56 @@
 2025-06-08 13:05:41,230 - DEBUG - Skipping notification - Today is Sunday
 2025-06-08 13:05:51,229 - DEBUG - Skipping notification - Today is Sunday
 2025-06-08 13:06:01,230 - DEBUG - Skipping notification - Today is Sunday
+2025-06-08 14:39:57,275 - INFO - Tasks saved successfully
+2025-06-08 14:39:57,333 - INFO - Tasks loaded successfully
+2025-06-08 14:40:04,283 - INFO - Opening email with To: ADdfd@CAP.COM, CC: SRUTH@CAP.COM;GOK@CAP.COM, Subject: Daily Status 08/06/2025
+2025-06-08 14:40:22,156 - INFO - Tasks saved successfully
+2025-06-08 14:40:23,179 - INFO - Tasks saved successfully
+2025-06-08 14:40:23,570 - INFO - Tasks saved successfully
+2025-06-08 14:40:23,755 - INFO - Tasks saved successfully
+2025-06-08 14:40:23,923 - INFO - Tasks saved successfully
+2025-06-08 14:40:26,283 - INFO - Tasks saved successfully
+2025-06-08 14:40:26,305 - INFO - Tasks loaded successfully
+2025-06-08 14:40:26,467 - INFO - Tasks saved successfully
+2025-06-08 14:40:26,485 - INFO - Tasks loaded successfully
+2025-06-08 14:40:26,620 - INFO - Tasks saved successfully
+2025-06-08 14:40:26,638 - INFO - Tasks loaded successfully
+2025-06-08 14:40:26,779 - INFO - Tasks saved successfully
+2025-06-08 14:40:26,799 - INFO - Tasks loaded successfully
+2025-06-08 14:40:27,138 - INFO - Tasks saved successfully
+2025-06-08 14:40:27,160 - INFO - Tasks loaded successfully
+2025-06-08 14:40:28,069 - INFO - Tasks saved successfully
+2025-06-08 14:40:28,112 - INFO - Tasks loaded successfully
+2025-06-08 14:40:28,253 - INFO - Tasks saved successfully
+2025-06-08 14:40:28,276 - INFO - Tasks loaded successfully
+2025-06-08 14:40:28,388 - INFO - Tasks saved successfully
+2025-06-08 14:40:28,413 - INFO - Tasks loaded successfully
+2025-06-08 14:40:28,557 - INFO - Tasks saved successfully
+2025-06-08 14:40:28,585 - INFO - Tasks loaded successfully
+2025-06-08 14:40:31,370 - INFO - Tasks saved successfully
+2025-06-08 14:40:31,803 - INFO - Tasks saved successfully
+2025-06-08 14:40:31,963 - INFO - Tasks saved successfully
+2025-06-08 14:40:32,139 - INFO - Tasks saved successfully
+2025-06-08 15:13:35,745 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}
+2025-06-08 15:13:35,752 - INFO - Tasks saved successfully
+2025-06-08 15:13:38,600 - INFO - Tasks loaded successfully
+2025-06-08 15:13:43,410 - INFO - Tasks saved successfully
+2025-06-08 15:13:45,875 - INFO - Tasks saved successfully
+2025-06-08 15:13:48,407 - INFO - Tasks loaded successfully
+2025-06-08 15:13:51,890 - INFO - Tasks saved successfully
+2025-06-08 15:13:53,327 - INFO - Tasks loaded successfully
+2025-06-08 15:13:56,930 - INFO - Opening email with To: ADdfd@CAP.COM, CC: SRUTH@CAP.COM;GOK@CAP.COM, Subject: Daily Status 08/06/2025
+2025-06-08 15:14:10,219 - INFO - Opening email with To: ADdfd@CAP.COM, CC: SRUTH@CAP.COM;GOK@CAP.COM, Subject: Daily Status 08/06/2025
+2025-06-08 15:15:55,124 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}
+2025-06-08 15:15:55,130 - INFO - Tasks saved successfully
+2025-06-08 15:16:10,857 - INFO - Tasks loaded successfully
+2025-06-08 15:16:30,778 - INFO - Tasks saved successfully
+2025-06-08 15:16:35,297 - INFO - Tasks loaded successfully
+2025-06-08 15:16:37,859 - INFO - Tasks saved successfully
+2025-06-08 15:16:40,369 - INFO - Tasks saved successfully
+2025-06-08 15:16:42,794 - INFO - Tasks saved successfully
+2025-06-08 15:16:44,657 - INFO - Tasks loaded successfully
+2025-06-08 15:38:09,510 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 15:38:17,129 - INFO - Tasks loaded successfully
+2025-06-08 15:38:20,257 - INFO - Tasks saved successfully
+2025-06-08 15:38:26,106 - INFO - Opening email with To: ADdfd@CAP.COM, CC: SRUTH@CAP.COM;GOK@CAP.COM, Raw CC: SRUTH@CAP.COM;GOK@CAP.COM, Subject: Daily Status 08/06/2025
