@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-                               QComboBox, QPushButton, QLineEdit, QGroupBox, QListWidget)
+                               QComboBox, QPushButton, QLineEdit, QGroupBox, QListWidget, QMessageBox)
 from PySide6.QtCore import Qt
+from PySide6.QtPrintSupport import QPrinter
+from PySide6.QtGui import QPainter, QPdfWriter
 import json
 
 class ResultsTab(QWidget):
@@ -20,11 +22,15 @@ class ResultsTab(QWidget):
         self.results_table = QTableWidget()
         self.results_table.setColumnCount(5)
         self.results_table.setHorizontalHeaderLabels(["No", "Ticket ID", "Type", "Status", "Priority"])
+        # Adjust column widths to ensure visibility
         self.results_table.setColumnWidth(0, 50)
         self.results_table.setColumnWidth(1, 150)
         self.results_table.setColumnWidth(2, 150)
         self.results_table.setColumnWidth(3, 100)
-        self.results_table.setColumnWidth(4, 100)
+        self.results_table.setColumnWidth(4, 150)
+        self.results_table.setMinimumHeight(200)
+        # Set a default row height to ensure QComboBox widgets are visible
+        self.results_table.verticalHeader().setDefaultSectionSize(40)
         results_layout.addWidget(self.results_table)
 
         # Add Result Row
@@ -55,7 +61,15 @@ class ResultsTab(QWidget):
         remove_result_btn.clicked.connect(self.remove_result)
         results_layout.addWidget(remove_result_btn)
 
+        # Add a Generate PDF button
+        generate_pdf_btn = QPushButton("Generate PDF")
+        generate_pdf_btn.clicked.connect(self.generate_pdf)
+        results_layout.addWidget(generate_pdf_btn)
+
         layout.addWidget(results_frame)
+
+        # Add stretch to prevent overlap
+        layout.addStretch(1)
 
         # Issues Frame
         issues_frame = QGroupBox("Issues Identified")
@@ -70,6 +84,7 @@ class ResultsTab(QWidget):
         issues_layout.addWidget(add_issue_btn)
 
         self.issues_list = QListWidget()
+        self.issues_list.setMinimumHeight(150)
         issues_layout.addWidget(self.issues_list)
 
         remove_issue_btn = QPushButton("Remove Selected Issue")
@@ -77,6 +92,9 @@ class ResultsTab(QWidget):
         issues_layout.addWidget(remove_issue_btn)
 
         layout.addWidget(issues_frame)
+
+        # Add stretch at the bottom to push content up
+        layout.addStretch(1)
 
     def add_result(self):
         ticket_id = self.ticket_id_entry.text().strip()
@@ -132,6 +150,102 @@ class ResultsTab(QWidget):
             self.issues.pop(row)
             self.issues_list.takeItem(row)
             self.save_configuration()
+
+    def generate_pdf(self):
+        try:
+            # Create a PDF file named "test_report.pdf"
+            pdf_writer = QPdfWriter("test_report.pdf")
+            pdf_writer.setPageSize(QPrinter.A4)
+            pdf_writer.setResolution(100)
+
+            painter = QPainter()
+            if not painter.begin(pdf_writer):
+                QMessageBox.critical(self, "Error", "Failed to initialize PDF writer. Check file permissions or disk space.")
+                return
+
+            # Set up font and initial position
+            painter.setFont(self.font())
+            y_position = 50
+            page_height = 800  # Approximate height of A4 page at 100 DPI
+
+            # Draw Title
+            painter.drawText(50, y_position, "Test Report")
+            y_position += 50
+
+            # Draw Test Results Table Header
+            painter.drawText(50, y_position, "Test Results")
+            y_position += 30
+
+            # Table headers
+            headers = ["No", "Ticket ID", "Type", "Status", "Priority"]
+            x_position = 50
+            for header in headers:
+                painter.drawText(x_position, y_position, header)
+                x_position += 100
+            y_position += 20
+
+            # Draw a line under the headers
+            painter.drawLine(50, y_position, 550, y_position)
+            y_position += 10
+
+            # Draw Test Results Table Data
+            for row in range(self.results_table.rowCount()):
+                # Check if we need a new page
+                if y_position > page_height - 50:
+                    pdf_writer.newPage()
+                    y_position = 50
+                    # Redraw headers on new page
+                    painter.drawText(50, y_position, "Test Results (Continued)")
+                    y_position += 30
+                    x_position = 50
+                    for header in headers:
+                        painter.drawText(x_position, y_position, header)
+                        x_position += 100
+                    y_position += 20
+                    painter.drawLine(50, y_position, 550, y_position)
+                    y_position += 10
+
+                no = self.results_table.item(row, 0).text() if self.results_table.item(row, 0) else ""
+                ticket_id = self.results_table.item(row, 1).text() if self.results_table.item(row, 1) else ""
+                type_text = self.results_table.cellWidget(row, 2).currentText()
+                status = self.results_table.item(row, 3).text() if self.results_table.item(row, 3) else ""
+                priority = self.results_table.cellWidget(row, 4).currentText()
+
+                x_position = 50
+                for text in [no, ticket_id, type_text, status, priority]:
+                    painter.drawText(x_position, y_position, text)
+                    x_position += 100
+                y_position += 20
+
+            y_position += 30
+
+            # Check if we need a new page for Issues
+            if y_position > page_height - 50:
+                pdf_writer.newPage()
+                y_position = 50
+
+            # Draw Issues Identified Section
+            painter.drawText(50, y_position, "Issues Identified")
+            y_position += 30
+
+            if self.issues:
+                for issue in self.issues:
+                    if y_position > page_height - 50:
+                        pdf_writer.newPage()
+                        y_position = 50
+                        painter.drawText(50, y_position, "Issues Identified (Continued)")
+                        y_position += 30
+                    painter.drawText(50, y_position, f"- {issue}")
+                    y_position += 20
+            else:
+                painter.drawText(50, y_position, "No issues identified.")
+                y_position += 20
+
+            painter.end()
+            QMessageBox.information(self, "Success", "PDF generated successfully as 'test_report.pdf'.")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to generate PDF: {str(e)}")
 
     def save_configuration(self):
         settings = self.parent().settings if hasattr(self.parent(), 'settings') else None

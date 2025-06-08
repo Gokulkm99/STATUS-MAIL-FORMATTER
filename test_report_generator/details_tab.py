@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLineEdit, QComboBox,
-                               QRadioButton, QGroupBox, QPushButton, QDateEdit, QListWidget, QButtonGroup)
-from PySide6.QtCore import QDate
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit, QComboBox,
+                               QRadioButton, QGroupBox, QPushButton, QDateEdit, QListWidget, QButtonGroup,
+                               QScrollArea)
+from PySide6.QtCore import QDate, Qt
 import json
 
 class DetailsTab(QWidget):
@@ -11,12 +12,25 @@ class DetailsTab(QWidget):
         self.load_configuration()
 
     def setup_ui(self):
-        layout = QVBoxLayout(self)
+        # Main layout for the entire widget
+        main_layout = QVBoxLayout(self)
+
+        # Create a scroll area
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+        # Create a container widget for the scroll area
+        container = QWidget()
+        scroll.setWidget(container)
+        container_layout = QVBoxLayout(container)
 
         # Test Report Details Frame
         details_frame = QGroupBox("Test Report Details")
         details_layout = QFormLayout(details_frame)
 
+        # Text entries
         self.title_entry = QLineEdit()
         self.title_entry.setPlaceholderText("Enter report title...")
         details_layout.addRow("Report Title:", self.title_entry)
@@ -33,8 +47,17 @@ class DetailsTab(QWidget):
         self.test_type_combo.addItems(["Manual - Regression", "Manual - Smoke", "Automation", "Performance"])
         details_layout.addRow("Type of Test:", self.test_type_combo)
 
+        self.change_id_entry = QLineEdit()
+        self.change_id_entry.setPlaceholderText("Enter change ID...")
+        details_layout.addRow("Change ID:", self.change_id_entry)
+
+        # Browser radio buttons
         browser_group = QGroupBox("Browser")
-        browser_layout = QVBoxLayout(browser_group)
+        browser_group.setMinimumHeight(60)
+        browser_group.setMinimumWidth(500)
+        browser_layout = QHBoxLayout(browser_group)
+        browser_layout.setSpacing(25)
+        browser_layout.setContentsMargins(10, 5, 10, 5)  # Reduced top margin to place buttons closer to title
         self.browser_group = QButtonGroup()
         browsers = ["Chrome", "Firefox", "Edge", "Safari"]
         for browser in browsers:
@@ -43,14 +66,16 @@ class DetailsTab(QWidget):
                 radio.setChecked(True)
             self.browser_group.addButton(radio)
             browser_layout.addWidget(radio)
+        browser_layout.addStretch()
         details_layout.addRow(browser_group)
 
-        self.change_id_entry = QLineEdit()
-        self.change_id_entry.setPlaceholderText("Enter change ID...")
-        details_layout.addRow("Change ID:", self.change_id_entry)
-
+        # Environment radio buttons
         env_group = QGroupBox("Environment")
-        env_layout = QVBoxLayout(env_group)
+        env_group.setMinimumHeight(60)
+        env_group.setMinimumWidth(500)
+        env_layout = QHBoxLayout(env_group)
+        env_layout.setSpacing(25)
+        env_layout.setContentsMargins(10, 5, 10, 5)
         self.env_group = QButtonGroup()
         envs = ["DEV", "QA", "UAT", "PROD"]
         for env in envs:
@@ -59,8 +84,28 @@ class DetailsTab(QWidget):
                 radio.setChecked(True)
             self.env_group.addButton(radio)
             env_layout.addWidget(radio)
+        env_layout.addStretch()
         details_layout.addRow(env_group)
 
+        # Status radio buttons
+        status_group = QGroupBox("Status")
+        status_group.setMinimumHeight(60)
+        status_group.setMinimumWidth(400)
+        status_layout = QHBoxLayout(status_group)
+        status_layout.setSpacing(25)
+        status_layout.setContentsMargins(10, 5, 10, 5)
+        self.status_group = QButtonGroup()
+        statuses = ["Passed", "Fail", "Blocked"]
+        for status in statuses:
+            radio = QRadioButton(status)
+            if status == "Passed":
+                radio.setChecked(True)
+            self.status_group.addButton(radio)
+            status_layout.addWidget(radio)
+        status_layout.addStretch()
+        details_layout.addRow(status_group)
+
+        # Date entries
         self.start_date = QDateEdit()
         self.start_date.setCalendarPopup(True)
         self.start_date.setDate(QDate.currentDate())
@@ -75,19 +120,7 @@ class DetailsTab(QWidget):
         self.tester_entry.setPlaceholderText("Enter tester name...")
         details_layout.addRow("Tester:", self.tester_entry)
 
-        status_group = QGroupBox("Status")
-        status_layout = QVBoxLayout(status_group)
-        self.status_group = QButtonGroup()
-        statuses = ["Passed", "Fail", "Blocked"]
-        for status in statuses:
-            radio = QRadioButton(status)
-            if status == "Passed":
-                radio.setChecked(True)
-            self.status_group.addButton(radio)
-            status_layout.addWidget(radio)
-        details_layout.addRow(status_group)
-
-        layout.addWidget(details_frame)
+        container_layout.addWidget(details_frame)
 
         # Test Cases Frame
         test_cases_frame = QGroupBox("Test Cases")
@@ -97,18 +130,40 @@ class DetailsTab(QWidget):
         self.test_case_entry.setPlaceholderText("Enter test case description...")
         test_cases_layout.addWidget(self.test_case_entry)
 
+        # Buttons in a horizontal layout
+        button_layout = QHBoxLayout()
         add_test_case_btn = QPushButton("Add Test Case")
         add_test_case_btn.clicked.connect(self.add_test_case)
-        test_cases_layout.addWidget(add_test_case_btn)
-
-        self.test_case_list = QListWidget()
-        test_cases_layout.addWidget(self.test_case_list)
+        button_layout.addWidget(add_test_case_btn)
 
         remove_test_case_btn = QPushButton("Remove Selected Test Case")
         remove_test_case_btn.clicked.connect(self.remove_test_case)
-        test_cases_layout.addWidget(remove_test_case_btn)
+        button_layout.addWidget(remove_test_case_btn)
+        button_layout.addStretch()
+        test_cases_layout.addLayout(button_layout)
 
-        layout.addWidget(test_cases_frame)
+        self.test_case_list = QListWidget()
+        self.test_case_list.setMinimumHeight(150)
+        test_cases_layout.addWidget(self.test_case_list)
+
+        container_layout.addWidget(test_cases_frame)
+        container_layout.addStretch()
+
+        # Add the scroll area to the main layout
+        main_layout.addWidget(scroll)
+
+        # Apply a stylesheet for title positioning only
+        self.setStyleSheet("""
+            QGroupBox {
+                margin-top: 25px;  /* Reduced margin to tighten layout */
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                padding: 5px 10px;  /* Reduced padding to bring title closer to content */
+                margin-left: 8px;
+            }
+        """)
 
     def add_test_case(self):
         test_case = self.test_case_entry.text().strip()
