@@ -1427,3 +1427,23 @@
 2025-06-08 15:38:17,129 - INFO - Tasks loaded successfully
 2025-06-08 15:38:20,257 - INFO - Tasks saved successfully
 2025-06-08 15:38:26,106 - INFO - Opening email with To: ADdfd@CAP.COM, CC: SRUTH@CAP.COM;GOK@CAP.COM, Raw CC: SRUTH@CAP.COM;GOK@CAP.COM, Subject: Daily Status 08/06/2025
+2025-06-08 15:42:41,174 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 15:42:45,441 - INFO - Tasks loaded successfully
+2025-06-08 15:42:47,859 - INFO - Opening email with To: ADdfd@CAP.COM, CC: SRUTH@CAP.COM;GOK@CAP.COM, Raw CC: SRUTH@CAP.COM;GOK@CAP.COM, Subject: Daily Status 08/06/2025
+2025-06-08 15:51:56,228 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 15:51:59,467 - INFO - Tasks loaded successfully
+2025-06-08 15:52:01,881 - INFO - Processed CC emails: raw='SRUTH@CAP.COM;GOK@CAP.COM', com='SRUTH@CAP.COM;GOK@CAP.COM', pwa='SRUTH@CAP.COM,GOK@CAP.COM'
+2025-06-08 15:52:01,881 - INFO - Opening email with To: ADdfd@CAP.COM, CC (COM): SRUTH@CAP.COM;GOK@CAP.COM, CC (PWA): SRUTH@CAP.COM,GOK@CAP.COM, Subject: Daily Status 08/06/2025
+2025-06-08 15:52:23,201 - INFO - Processed CC emails: raw='SRUTH@CAP.COM;GOK@CAP.COM', com='SRUTH@CAP.COM;GOK@CAP.COM', pwa='SRUTH@CAP.COM,GOK@CAP.COM'
+2025-06-08 15:52:23,201 - INFO - Opening email with To: ADdfd@CAP.COM, CC (COM): SRUTH@CAP.COM;GOK@CAP.COM, CC (PWA): SRUTH@CAP.COM,GOK@CAP.COM, Subject: Daily Status 08/06/2025
+2025-06-08 15:52:41,417 - INFO - Processed CC emails: raw='SRUTH@CAP.COM;GOK@CAP.COM', com='SRUTH@CAP.COM;GOK@CAP.COM', pwa='SRUTH@CAP.COM,GOK@CAP.COM'
+2025-06-08 15:52:41,417 - INFO - Opening email with To: ADdfd@CAP.COM, CC (COM): SRUTH@CAP.COM;GOK@CAP.COM, CC (PWA): SRUTH@CAP.COM,GOK@CAP.COM, Subject: Daily Status 08/06/2025
+2025-06-08 15:58:31,830 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 15:58:39,649 - INFO - Tasks loaded successfully
+2025-06-08 15:58:42,257 - INFO - Processed CC emails: raw='SRUTH@CAP.COM;GOK@CAP.COM', com='SRUTH@CAP.COM;GOK@CAP.COM', pwa='SRUTH@CAP.COM,GOK@CAP.COM', encoded_pwa='SRUTH%40CAP.COM,GOK%40CAP.COM'
+2025-06-08 15:58:42,257 - INFO - Opening email with To: ADdfd@CAP.COM, CC (COM): SRUTH@CAP.COM;GOK@CAP.COM, CC (PWA): SRUTH@CAP.COM,GOK@CAP.COM, Subject: Daily Status 08/06/2025, URL: https://outlook.office.com/mail/0/deeplink/compose?to=ADdfd%40CAP.COM&cc=SRUTH%40CAP.COM,GOK%40CAP.COM&subject=Daily%20Status%2008/06/2025
+2025-06-08 16:11:31,753 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 16:11:34,256 - INFO - Tasks loaded successfully
+2025-06-08 16:11:36,560 - INFO - Processed CC emails: raw='SRUTH@CAP.COM;GOK@CAP.COM', com='SRUTH@CAP.COM;GOK@CAP.COM'
+2025-06-08 16:11:36,560 - INFO - Opening email with To: ADdfd@CAP.COM, CC: SRUTH@CAP.COM;GOK@CAP.COM, Subject: Daily Status 08/06/2025, URL: mailto:ADdfd%40CAP.COM?cc=SRUTH%40CAP.COM%3BGOK%40CAP.COM&subject=Daily%20Status%2008/06/2025&body=
+2025-06-08 16:14:54,863 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM

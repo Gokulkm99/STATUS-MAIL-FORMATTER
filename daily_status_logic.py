@@ -8,7 +8,7 @@ import logging
 import subprocess
 import urllib.parse
 import win32com.client
-from PySide6.QtWidgets import (QMessageBox, QDialog, QSystemTrayIcon, QMenu, QFileDialog, QVBoxLayout)
+from PySide6.QtWidgets import (QApplication, QMessageBox, QDialog, QSystemTrayIcon, QMenu, QFileDialog, QVBoxLayout)
 from PySide6.QtCore import Qt, QTimer, QDateTime
 from PySide6.QtGui import QCloseEvent, QIcon
 import win32clipboard
@@ -557,56 +557,58 @@ class EODLogic:
             return
 
         try:
-            html_content = self.generate_copy_html()
+            # Copy HTML content without signature for manual pasting
+            html_content = self.generate_email_body(preview=False)
             set_clipboard_html(html_content)
             self.html_copied = True
+
+            # Generate full HTML with signature for Outlook fallbacks
+            full_html = self.generate_copy_html()
 
             today = date.today().strftime("%d/%m/%Y")
             subject = f"Daily Status {today}"
             to_emails = self.config["email"]["to"].strip()
             cc_emails_raw = self.config["email"]["cc"].strip()
-            cc_emails = cc_emails_raw.replace(',', ';')  # Normalize to semicolons for COM
-            if not cc_emails:
-                logging.warning(f"No valid CC emails found. Raw input: {cc_emails_raw}")
-                QMessageBox.information(self.parent, "Warning", "No CC emails configured. Proceeding with only To emails.")
-            logging.info(f"Opening email with To: {to_emails}, CC: {cc_emails}, Raw CC: {cc_emails_raw}, Subject: {subject}")
 
-            # Try Outlook PWA via Chrome
+            # Normalize and validate CC emails
+            if cc_emails_raw:
+                cc_list = [email.strip() for email in cc_emails_raw.replace(',', ';').split(';') if email.strip()]
+                cc_emails_com = ';'.join(cc_list)  # For COM interface
+                cc_emails = cc_emails_raw  # For mailto
+                logging.info(f"Processed CC emails: raw='{cc_emails_raw}', com='{cc_emails_com}'")
+            else:
+                cc_list = []
+                cc_emails_com = ''
+                cc_emails = ''
+                logging.warning(f"No CC emails configured: raw='{cc_emails_raw}'")
+                QMessageBox.information(self.parent, "Warning", "No CC emails configured. Proceeding with only To emails.")
+
+            # Try mailto URL first
             try:
-                encoded_to = urllib.parse.quote(to_emails)
-                # Split CC emails and encode as comma-separated for PWA
-                cc_list = [email.strip() for email in cc_emails.split(';') if email.strip()]
-                encoded_cc = urllib.parse.quote(','.join(cc_list)) if cc_list else ''
-                encoded_subject = urllib.parse.quote(subject)
-                outlook_pwa_url = f"https://outlook.office.com/mail/0/deeplink/compose?to={encoded_to}&cc={encoded_cc}&subject={encoded_subject}"
-                chrome_path = None
-                possible_paths = [
-                    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-                    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-                ]
-                for path in possible_paths:
-                    if os.path.exists(path):
-                        chrome_path = path
-                        break
-                if chrome_path:
-                    subprocess.run([chrome_path, outlook_pwa_url], check=True)
-                    QMessageBox.information(
-                        self.parent,
-                        "Success",
-                        "Outlook PWA opened in Chrome with pre-filled To, CC, and Subject.\n"
-                        "The HTML body is copied to the clipboard. Please paste (Ctrl+V) into the email body."
-                    )
-                else:
-                    webbrowser.open(outlook_pwa_url, new=2)
-                    QMessageBox.information(
-                        self.parent,
-                        "Success",
-                        "Outlook PWA opened in default browser (Chrome not found).\n"
-                        "The HTML body is copied to the clipboard. Please paste (Ctrl+V) into the email body."
-                    )
+                params = {
+                    "to": to_emails,
+                    "cc": cc_emails,
+                    "subject": subject,
+                    "body": ""  # Body is empty since HTML is on clipboard
+                }
+                mailto_url = (
+                    f"mailto:{urllib.parse.quote(params['to'])}?"
+                    f"cc={urllib.parse.quote(params['cc'])}&"
+                    f"subject={urllib.parse.quote(params['subject'])}&"
+                    f"body={urllib.parse.quote(params['body'])}"
+                )
+                logging.info(f"Opening email with To: {to_emails}, CC: {cc_emails}, Subject: {subject}, URL: {mailto_url}")
+                webbrowser.open(mailto_url)
+                QMessageBox.information(
+                    self.parent,
+                    "Success",
+                    "Email client opened with pre-filled To, CC, and Subject.\n"
+                    "The HTML body (without signature) is copied to the clipboard. Please paste (Ctrl+V) into the email body.\n"
+                    "Add your signature in Outlook if needed."
+                )
                 return
-            except (FileNotFoundError, subprocess.CalledProcessError) as e:
-                logging.info(f"Failed to open Outlook PWA: {e}")
+            except Exception as e:
+                logging.info(f"Failed to open email client via mailto: {e}")
 
             # Try Outlook New
             try:
@@ -614,8 +616,8 @@ class EODLogic:
                 mail = outlook.CreateItem(0)  # 0 = olMailItem
                 mail.Subject = subject
                 mail.To = to_emails
-                mail.CC = cc_emails  # Semicolon-separated
-                mail.HTMLBody = html_content
+                mail.CC = cc_emails_com
+                mail.HTMLBody = full_html
                 mail.Display()
                 QMessageBox.information(self.parent, "Success", "Email opened in Outlook New with pre-filled fields!")
                 return
@@ -628,8 +630,8 @@ class EODLogic:
                 mail = outlook.CreateItem(0)  # 0 = olMailItem
                 mail.Subject = subject
                 mail.To = to_emails
-                mail.CC = cc_emails
-                mail.HTMLBody = html_content
+                mail.CC = cc_emails_com
+                mail.HTMLBody = full_html
                 mail.Display()
                 QMessageBox.information(self.parent, "Success", "Email opened in classic Outlook with pre-filled fields!")
             except Exception as e:
@@ -637,8 +639,8 @@ class EODLogic:
                     self.parent,
                     "Email Error",
                     f"Failed to open email in any Outlook version.\n"
-                    f"Ensure Outlook or Chrome is installed.\nError: {str(e)}\n"
-                    "The HTML body is copied to the clipboard. Please open Outlook manually and paste the content."
+                    f"Ensure Outlook is installed.\nError: {str(e)}\n"
+                    "The HTML body (without signature) is copied to the clipboard. Please open Outlook manually and paste the content."
                 )
 
         except Exception as e:
