@@ -121,6 +121,13 @@ class SettingsDialog(QDialog):
         cancel_btn.clicked.connect(self.reject)
         button_layout.addWidget(cancel_btn)
 
+        info_btn = QPushButton("ℹ Info")
+        info_btn.setToolTip("Show application info")
+        info_btn.setFixedSize(40, 40)
+        info_btn.clicked.connect(self.parent().show_info_dialog)
+        self.parent().animate_button(info_btn)
+        button_layout.addWidget(info_btn)
+
         layout.addLayout(button_layout)
 
         self.load_settings()
@@ -194,24 +201,20 @@ class SettingsDialog(QDialog):
     def save(self):
         settings = self.parent().settings if hasattr(self.parent(), 'settings') else None
         if settings:
-            settings.beginGroup("SettingsDialog")
-            settings.setValue("default_project", self.default_project_entry.text())
-            settings.setValue("default_version", self.default_version_entry.text())
-            settings.setValue("default_tester", self.default_tester_entry.text())
-            settings.endGroup()
-
             settings.beginGroup("Configuration")
             settings.setValue("browsers", json.dumps(self.browsers))
             settings.setValue("environments", json.dumps(self.environments))
             settings.setValue("statuses", json.dumps(self.statuses))
+            settings.setValue("default_project", self.default_project_entry.text().strip())
+            settings.setValue("default_version", self.default_version_entry.text().strip())
+            settings.setValue("default_tester", self.default_tester_entry.text().strip())
             settings.endGroup()
-
         self.accept()
 
     def load_settings(self):
         settings = self.parent().settings if hasattr(self.parent(), 'settings') else None
         if settings:
-            settings.beginGroup("SettingsDialog")
+            settings.beginGroup("Configuration")
             self.default_project_entry.setText(settings.value("default_project", ""))
             self.default_version_entry.setText(settings.value("default_version", ""))
             self.default_tester_entry.setText(settings.value("default_tester", ""))

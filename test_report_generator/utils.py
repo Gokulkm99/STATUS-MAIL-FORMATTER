@@ -5,20 +5,27 @@ class NotificationDialog(QDialog):
     def __init__(self, message, title, is_error=False, parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
-        self.setModal(True)
-        self.is_error = is_error
-        self.setup_ui(message)
-
-    def setup_ui(self, message):
+        self.setFixedSize(300, 150)
         layout = QVBoxLayout(self)
-        layout.setSpacing(10)
-        layout.setContentsMargins(10, 10, 10, 10)
-
+        layout.setAlignment(Qt.AlignCenter)
         label = QLabel(message)
         label.setAlignment(Qt.AlignCenter)
         label.setWordWrap(True)
         layout.addWidget(label)
-
-        ok_btn = QPushButton("OK")
-        ok_btn.clicked.connect(self.accept)
-        layout.addWidget(ok_btn)
+        button = QPushButton("OK")
+        button.clicked.connect(self.accept)
+        layout.addWidget(button, alignment=Qt.AlignCenter)
+        if is_error:
+            self.setStyleSheet("""
+                background-color: #FFCDD2;
+                color: #B71C1C;
+                QWidget { font-family: Calibri, Arial, sans-serif; font-size: 12px; }
+                QPushButton { padding: 8px; }
+            """)
+        else:
+            self.setStyleSheet("""
+                background-color: #C8E6C9;
+                color: #1B5E20;
+                QWidget { font-family: Calibri, Arial, sans-serif; font-size: 12px; }
+                QPushButton { padding: 8px; }
+            """)

@@ -1447,3 +1447,28 @@
 2025-06-08 16:11:36,560 - INFO - Processed CC emails: raw='SRUTH@CAP.COM;GOK@CAP.COM', com='SRUTH@CAP.COM;GOK@CAP.COM'
 2025-06-08 16:11:36,560 - INFO - Opening email with To: ADdfd@CAP.COM, CC: SRUTH@CAP.COM;GOK@CAP.COM, Subject: Daily Status 08/06/2025, URL: mailto:ADdfd%40CAP.COM?cc=SRUTH%40CAP.COM%3BGOK%40CAP.COM&subject=Daily%20Status%2008/06/2025&body=
 2025-06-08 16:14:54,863 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 16:23:23,392 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 16:31:58,143 - INFO - Tasks loaded successfully
+2025-06-08 16:33:37,041 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 16:33:54,304 - INFO - Tasks loaded successfully
+2025-06-08 16:34:01,171 - INFO - Updated config: cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 16:54:54,809 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 16:58:13,060 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 17:22:54,818 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 17:30:37,644 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 17:37:17,085 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 17:38:09,038 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 17:43:44,766 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 17:44:45,686 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 17:46:07,772 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 17:58:40,617 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 18:06:09,421 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 18:09:24,806 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 18:13:23,329 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 18:25:55,523 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 18:27:20,937 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 18:37:37,912 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 18:46:57,205 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 19:00:15,472 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 19:16:05,033 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM
+2025-06-08 19:16:30,763 - INFO - Loaded config: email={'to': 'ADdfd@CAP.COM', 'cc': 'SRUTH@CAP.COM;GOK@CAP.COM', 'recipient': 'Team'}, cc=SRUTH@CAP.COM;GOK@CAP.COM

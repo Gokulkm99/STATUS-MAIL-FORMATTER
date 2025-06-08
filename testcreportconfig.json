@@ -1,0 +1,36 @@
+{
+    "project_name": "",
+    "project_version": "",
+    "type_of_test": "Manual - Regression",
+    "browser": "Chrome",
+    "browsers": [
+        "Chrome",
+        "Firefox",
+        "Edge",
+        "Safari"
+    ],
+    "change_id": "",
+    "environment": "DEV",
+    "environments": [
+        "DEV",
+        "QA",
+        "UAT",
+        "PROD"
+    ],
+    "start_date": "",
+    "end_date": "",
+    "tester": "",
+    "status": "Passed",
+    "statuses": [
+        "Passed",
+        "Fail",
+        "Blocked"
+    ],
+    "test_cases": [],
+    "test_results": [],
+    "issues": [],
+    "notes": "",
+    "recommendations": "",
+    "conclusion": "",
+    "test_case_generator": []
+}

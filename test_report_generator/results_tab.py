@@ -1,215 +1,145 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-                               QComboBox, QPushButton, QLineEdit, QGroupBox, QListWidget, QMessageBox)
+                               QPushButton, QGroupBox, QComboBox, QTextEdit, QLabel)
 from PySide6.QtCore import Qt
-from PySide6.QtPrintSupport import QPrinter
-from PySide6.QtGui import QPainter, QPdfWriter
-import json
 
 class ResultsTab(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.issues = []
         self.setup_ui()
-        self.load_configuration()
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
-        layout.setContentsMargins(10, 10, 10, 10)
 
         # Top Bar
         top_bar = QHBoxLayout()
         layout.addLayout(top_bar)
         top_bar.addStretch()
-        theme_button = QPushButton("☀" if self.parent().theme == "dark" else "🌙")
-        theme_button.setFixedSize(48, 48)
-        theme_button.setToolTip("Toggle Theme")
-        theme_button.clicked.connect(self.parent().toggle_theme)
-        self.parent().animate_button(theme_button)
-        top_bar.addWidget(theme_button)
-
         settings_button = QPushButton("⚙ Settings")
         settings_button.setToolTip("Open settings")
         settings_button.clicked.connect(self.parent().show_settings_dialog)
         self.parent().animate_button(settings_button)
         top_bar.addWidget(settings_button)
 
-        # Test Results Table
+        # Results Frame
         results_frame = QGroupBox("Test Results")
         results_layout = QVBoxLayout(results_frame)
         results_layout.setSpacing(10)
 
+        button_layout = QHBoxLayout()
+        add_row_btn = QPushButton("Add Row")
+        add_row_btn.clicked.connect(self.add_row)
+        self.parent().animate_button(add_row_btn)
+        button_layout.addWidget(add_row_btn)
+
+        remove_row_btn = QPushButton("Remove Selected Row")
+        remove_row_btn.clicked.connect(self.remove_row)
+        self.parent().animate_button(remove_row_btn)
+        button_layout.addWidget(remove_row_btn)
+
+        button_layout.addStretch()
+        results_layout.addLayout(button_layout)
+
         self.results_table = QTableWidget()
+        self.results_table.setRowCount(0)
         self.results_table.setColumnCount(5)
         self.results_table.setHorizontalHeaderLabels(["No", "Ticket ID", "Type", "Status", "Priority"])
-        self.results_table.setColumnWidth(0, 50)
-        self.results_table.setColumnWidth(1, 150)
-        self.results_table.setColumnWidth(2, 150)
-        self.results_table.setColumnWidth(3, 100)
-        self.results_table.setColumnWidth(4, 150)
-        self.results_table.setMinimumHeight(200)
-        self.results_table.verticalHeader().setDefaultSectionSize(40)
+        self.results_table.setAlternatingRowColors(True)
+        self.results_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.results_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.results_table.setMinimumHeight(150)
         results_layout.addWidget(self.results_table)
 
-        # Add Result Row
-        add_result_layout = QHBoxLayout()
-        add_result_layout.setSpacing(10)
-        self.ticket_id_entry = QLineEdit()
-        self.ticket_id_entry.setPlaceholderText("Enter ticket ID...")
-        add_result_layout.addWidget(self.ticket_id_entry)
-
-        self.type_combo = QComboBox()
-        self.type_combo.addItems(["Bug", "Change Request", "Feature"])
-        add_result_layout.addWidget(self.type_combo)
-
-        self.status_entry = QLineEdit()
-        self.status_entry.setPlaceholderText("Enter status...")
-        add_result_layout.addWidget(self.status_entry)
-
-        self.priority_combo = QComboBox()
-        self.priority_combo.addItems(["High", "Medium", "Low"])
-        add_result_layout.addWidget(self.priority_combo)
-
-        add_result_btn = QPushButton("Add Result")
-        add_result_btn.clicked.connect(self.add_result)
-        add_result_layout.addWidget(add_result_btn)
-
-        results_layout.addLayout(add_result_layout)
-
-        remove_result_btn = QPushButton("Remove Selected Result")
-        remove_result_btn.clicked.connect(self.remove_result)
-        results_layout.addWidget(remove_result_btn)
-
-        layout.addWidget(results_frame)
-
-        # Issues Frame
-        issues_frame = QGroupBox("Issues Identified")
+        issues_frame = QGroupBox("Issues")
         issues_layout = QVBoxLayout(issues_frame)
-        issues_layout.setSpacing(10)
+        issues_layout.addWidget(QLabel("Issues Identified:"))
 
-        self.issue_entry = QLineEdit()
-        self.issue_entry.setPlaceholderText("Enter issue description...")
-        issues_layout.addWidget(self.issue_entry)
+        self.issues_text = QTextEdit()
+        self.issues_text.setPlaceholderText("Enter issues here (one per line)...")
+        self.issues_text.setFixedHeight(100)
+        issues_layout.addWidget(self.issues_text)
 
+        button_layout2 = QHBoxLayout()
         add_issue_btn = QPushButton("Add Issue")
         add_issue_btn.clicked.connect(self.add_issue)
-        issues_layout.addWidget(add_issue_btn)
-
-        self.issues_list = QListWidget()
-        self.issues_list.setMinimumHeight(150)
-        issues_layout.addWidget(self.issues_list)
+        self.parent().animate_button(add_issue_btn)
+        button_layout2.addWidget(add_issue_btn)
 
         remove_issue_btn = QPushButton("Remove Selected Issue")
         remove_issue_btn.clicked.connect(self.remove_issue)
-        issues_layout.addWidget(remove_issue_btn)
+        self.parent().animate_button(remove_issue_btn)
+        button_layout2.addWidget(remove_issue_btn)
 
-        layout.addWidget(issues_frame)
+        button_layout2.addStretch()
+        issues_layout.addLayout(button_layout2)
 
+        self.issues_list = QTableWidget()
+        self.issues_list.setRowCount(0)
+        self.issues_list.setColumnCount(2)
+        self.issues_list.setHorizontalHeaderLabels(["No", "Issue"])
+        self.issues_list.setAlternatingRowColors(True)
+        self.issues_list.setSelectionMode(QTableWidget.SingleSelection)
+        self.issues_list.setSelectionBehavior(QTableWidget.SelectRows)
+        self.issues_list.setMinimumHeight(150)
+        issues_layout.addWidget(self.issues_list)
+
+        layout.addWidget(results_frame)
         layout.addStretch()
 
-    def add_result(self):
-        ticket_id = self.ticket_id_entry.text().strip()
-        type_text = self.type_combo.currentText()
-        status = self.status_entry.text().strip()
-        priority = self.priority_combo.currentText()
+        # Next Button
+        next_btn = QPushButton("Next")
+        next_btn.setToolTip("Go to Comments")
+        next_btn.setFixedWidth(50)
+        next_btn.clicked.connect(self.goto_comments_tab)
+        self.parent().animate_button(next_btn)
+        layout.addWidget(next_btn, alignment=Qt.AlignBottom | Qt.AlignRight)
 
-        if not ticket_id or not status:
-            return
+    def goto_comments_tab(self):
+        # Navigate to the Comments tab in the TestReportGeneratorWidget's tab_widget
+        if hasattr(self.parent(), 'tab_widget'):
+            self.parent().tab_widget.setCurrentIndex(2)
+        else:
+            print("Error: Could not find tab_widget for navigation")
 
-        row_count = self.results_table.rowCount()
-        self.results_table.insertRow(row_count)
+    def add_row(self):
+        row_position = self.results_table.rowCount()
+        self.results_table.insertRow(row_position)
 
-        self.results_table.setItem(row_count, 0, QTableWidgetItem(str(row_count + 1)))
-        self.results_table.setItem(row_count, 1, QTableWidgetItem(ticket_id))
-
+        self.results_table.setItem(row_position, 0, QTableWidgetItem(str(row_position + 1)))
+        self.results_table.setItem(row_position, 1, QTableWidgetItem(""))
         type_combo = QComboBox()
         type_combo.addItems(["Bug", "Change Request", "Feature"])
-        type_combo.setCurrentText(type_text)
-        self.results_table.setCellWidget(row_count, 2, type_combo)
-
-        self.results_table.setItem(row_count, 3, QTableWidgetItem(status))
-
+        self.results_table.setCellWidget(row_position, 2, type_combo)
+        self.results_table.setItem(row_position, 3, QTableWidgetItem(""))
         priority_combo = QComboBox()
         priority_combo.addItems(["High", "Medium", "Low"])
-        priority_combo.setCurrentText(priority)
-        self.results_table.setCellWidget(row_count, 4, priority_combo)
+        self.results_table.setCellWidget(row_position, 4, priority_combo)
 
-        self.ticket_id_entry.clear()
-        self.status_entry.clear()
-        self.save_configuration()
-
-    def remove_result(self):
+    def remove_row(self):
         current_row = self.results_table.currentRow()
         if current_row >= 0:
             self.results_table.removeRow(current_row)
             for row in range(self.results_table.rowCount()):
                 self.results_table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-            self.save_configuration()
 
     def add_issue(self):
-        issue = self.issue_entry.text().strip()
-        if issue:
-            self.issues.append(issue)
-            self.issues_list.addItem(issue)
-            self.issue_entry.clear()
-            self.save_configuration()
+        issue_text = self.issues_text.toPlainText().strip()
+        if issue_text:
+            for issue in issue_text.split('\n'):
+                issue = issue.strip()
+                if issue:
+                    self.issues.append(issue)
+                    row_position = self.issues_list.rowCount()
+                    self.issues_list.insertRow(row_position)
+                    self.issues_list.setItem(row_position, 0, QTableWidgetItem(str(row_position + 1)))
+                    self.issues_list.setItem(row_position, 1, QTableWidgetItem(issue))
+            self.issues_text.clear()
 
     def remove_issue(self):
-        current_item = self.issues_list.currentItem()
-        if current_item:
-            row = self.issues_list.row(current_item)
-            self.issues.pop(row)
-            self.issues_list.takeItem(row)
-            self.save_configuration()
-
-    def save_configuration(self):
-        settings = self.parent().settings if hasattr(self.parent(), 'settings') else None
-        if settings:
-            settings.beginGroup("ResultsTab")
-            results = []
-            for row in range(self.results_table.rowCount()):
-                ticket_id = self.results_table.item(row, 1).text() if self.results_table.item(row, 1) else ""
-                type_text = self.results_table.cellWidget(row, 2).currentText()
-                status = self.results_table.item(row, 3).text() if self.results_table.item(row, 3) else ""
-                priority = self.results_table.cellWidget(row, 4).currentText()
-                results.append({
-                    "ticket_id": ticket_id,
-                    "type": type_text,
-                    "status": status,
-                    "priority": priority
-                })
-            settings.setValue("test_results", json.dumps(results))
-            settings.setValue("issues", json.dumps(self.issues))
-            settings.endGroup()
-
-    def load_configuration(self):
-        settings = self.parent().settings if hasattr(self.parent(), 'settings') else None
-        if settings:
-            settings.beginGroup("ResultsTab")
-            results_json = settings.value("test_results", "[]")
-            issues_json = settings.value("issues", "[]")
-            try:
-                results = json.loads(results_json)
-                for i, result in enumerate(results):
-                    self.results_table.insertRow(i)
-                    self.results_table.setItem(i, 0, QTableWidgetItem(str(i + 1)))
-                    self.results_table.setItem(i, 1, QTableWidgetItem(result["ticket_id"]))
-
-                    type_combo = QComboBox()
-                    type_combo.addItems(["Bug", "Change Request", "Feature"])
-                    type_combo.setCurrentText(result["type"])
-                    self.results_table.setCellWidget(i, 2, type_combo)
-
-                    self.results_table.setItem(i, 3, QTableWidgetItem(result["status"]))
-
-                    priority_combo = QComboBox()
-                    priority_combo.addItems(["High", "Medium", "Low"])
-                    priority_combo.setCurrentText(result["priority"])
-                    self.results_table.setCellWidget(i, 4, priority_combo)
-
-                self.issues = json.loads(issues_json)
-                for issue in self.issues:
-                    self.issues_list.addItem(issue)
-            except json.JSONDecodeError:
-                pass
-            settings.endGroup()
+        current_row = self.issues_list.currentRow()
+        if current_row >= 0:
+            self.issues.pop(current_row)
+            self.issues_list.removeRow(current_row)
+            for row in range(self.issues_list.rowCount()):
+                self.issues_list.setItem(row, 0, QTableWidgetItem(str(row + 1)))
